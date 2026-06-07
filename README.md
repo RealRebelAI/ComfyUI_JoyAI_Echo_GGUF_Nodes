@@ -16,7 +16,6 @@
 
 - NVIDIA GPU **48GB+ 显存**（推荐 A6000/H100/A100 80GB）
   - 启用热切换：去噪阶段峰值 ~46GB
-  - 启用**逐层卸载**：**24GB 显存**即可（推理更慢）
 - Python 3.11+
 - PyTorch 2.4+，CUDA 支持
 - ffmpeg（视频拼接用）
@@ -168,7 +167,6 @@ This implementation is **faithful to the official inference pipeline** with zero
 
 - NVIDIA GPU with **48GB+ VRAM** (A6000/H100/A100 80GB recommended)
   - With hot-swap enabled: peak ~46GB during denoise phase
-  - With **sequential offload** enabled: **24GB VRAM** sufficient (slower inference)
 - Python 3.11+
 - PyTorch 2.4+ with CUDA support
 - ffmpeg (for video concatenation)
