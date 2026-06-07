@@ -1,11 +1,11 @@
 {
-  "last_node_id": 5,
-  "last_link_id": 5,
+  "last_node_id": 7,
+  "last_link_id": 8,
   "nodes": [
     {
       "id": 1,
       "type": "JoyEcho_ModelLoader",
-      "pos": [100, 300],
+      "pos": [100, 50],
       "size": [430, 200],
       "flags": {},
       "order": 0,
@@ -33,8 +33,8 @@
     {
       "id": 2,
       "type": "JoyEcho_TextEncode",
-      "pos": [620, 300],
-      "size": [500, 300],
+      "pos": [100, 320],
+      "size": [530, 500],
       "flags": {},
       "order": 1,
       "mode": 0,
@@ -59,7 +59,7 @@
           "slot_index": 1
         }
       ],
-      "title": "JoyEcho Text Encode",
+      "title": "JoyEcho Text Encode (15 shots)",
       "properties": {
         "Node name for S&R": "JoyEcho_TextEncode"
       },
@@ -71,7 +71,7 @@
     {
       "id": 3,
       "type": "JoyEcho_Generate",
-      "pos": [1220, 300],
+      "pos": [730, 50],
       "size": [380, 450],
       "flags": {},
       "order": 2,
@@ -92,13 +92,13 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "links": [4],
+          "links": [4, 6],
           "slot_index": 0
         },
         {
           "name": "audio",
           "type": "AUDIO",
-          "links": [5],
+          "links": [5, 7],
           "slot_index": 1
         }
       ],
@@ -108,6 +108,7 @@
       },
       "widgets_values": [
         12345,
+        "fixed",
         241,
         736,
         1280,
@@ -123,8 +124,8 @@
     {
       "id": 4,
       "type": "PreviewImage",
-      "pos": [1700, 250],
-      "size": [300, 300],
+      "pos": [1200, 50],
+      "size": [350, 350],
       "flags": {},
       "order": 3,
       "mode": 0,
@@ -143,8 +144,8 @@
     {
       "id": 5,
       "type": "PreviewAudio",
-      "pos": [1700, 600],
-      "size": [300, 100],
+      "pos": [1200, 450],
+      "size": [350, 100],
       "flags": {},
       "order": 4,
       "mode": 0,
@@ -159,6 +160,67 @@
       "properties": {
         "Node name for S&R": "PreviewAudio"
       }
+    },
+    {
+      "id": 6,
+      "type": "CreateVideo",
+      "pos": [1200, 600],
+      "size": [300, 150],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [8],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video (Merge All Shots)",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 7,
+      "type": "SaveVideo",
+      "pos": [1580, 600],
+      "size": [300, 150],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 8
+        }
+      ],
+      "title": "Save Video",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/output",
+        "auto",
+        "auto"
+      ]
     }
   ],
   "links": [
@@ -166,14 +228,17 @@
     [2, 2, 0, 3, 0, "JOYECHO_MODEL"],
     [3, 2, 1, 3, 1, "JOYECHO_COND"],
     [4, 3, 0, 4, 0, "IMAGE"],
-    [5, 3, 1, 5, 0, "AUDIO"]
+    [5, 3, 1, 5, 0, "AUDIO"],
+    [6, 3, 0, 6, 0, "IMAGE"],
+    [7, 3, 1, 6, 1, "AUDIO"],
+    [8, 6, 0, 7, 0, "VIDEO"]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7,
-      "offset": [50, 100]
+      "scale": 0.6,
+      "offset": [50, 50]
     }
   },
   "version": 0.4

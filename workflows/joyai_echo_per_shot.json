@@ -1,0 +1,4027 @@
+{
+  "last_node_id": 62,
+  "last_link_id": 104,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "JoyEcho_ModelLoader",
+      "pos": [
+        50,
+        600
+      ],
+      "size": [
+        430,
+        200
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            17
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "JoyEcho Model Loader",
+      "properties": {
+        "Node name for S&R": "JoyEcho_ModelLoader"
+      },
+      "widgets_values": [
+        "/pfs/lihaoran/Code/Echo-release-0602/JoyAI-Echo-release.safetensors",
+        "/pfs/lihaoran/Code/LTX-2_jd/checkpoints/gemma-3-12b",
+        "",
+        1.0,
+        false
+      ]
+    },
+    {
+      "id": 2,
+      "type": "JoyEcho_LLMEnhance",
+      "pos": [
+        50,
+        50
+      ],
+      "size": [
+        500,
+        400
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 4,
+      "outputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "links": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "JoyEcho LLM Enhance (Muted - Enable to Use)",
+      "properties": {
+        "Node name for S&R": "JoyEcho_LLMEnhance"
+      },
+      "widgets_values": [
+        "A late-twenties American lifestyle vlogger named Ethan documents his journey through a cafe, reflecting on life, creativity, and connection.",
+        "long_story (multi-shot)",
+        "",
+        "You are a professional shot-prompt writer for a joint audio-video generation model. Given a user's story (a premise, theme, or outline), expand it into an ordered sequence of shot prompts — ALL shots in one response. Each shot is one ~10-second clip the model renders with synchronized video and audio.\n\n## STRICT OUTPUT FORMAT (MUST FOLLOW EXACTLY)\n- Output MUST be a single valid JSON object and NOTHING else:\n  {\"prompts\": [\"<shot 1 prompt>\", \"<shot 2 prompt>\", ...]}\n- No text before or after the JSON. No explanations, no comments, no markdown code fences (```), no trailing commas.\n- \"prompts\" is a JSON array of STRINGS. Each string = exactly one shot.\n- Each string is ONE single continuous English paragraph. Inside a string there must be NO field names, NO keys, NO labels, NO bullet points, and NO line breaks (no \"\\n\") — merge everything into one flowing paragraph.\n- The spoken line, when present, is embedded inside the paragraph with escaped double quotes: ... ID_A says, \\\"...\\\" ...\n- The number of array elements equals the number of shots. Everything is written in English.\n\n## SPEECH IS OPTIONAL PER SHOT (IMPORTANT)\n- Not every shot has spoken dialogue. Decide per shot whether characters speak, and how many.\n- Use NON-SPEAKING shots for establishing, mood, reaction, object-detail, or transition beats — this varies the rhythm and strengthens the dramatic arc.\n- A shot may have one speaker, two speakers exchanging lines, or no speaker at all.\n- Only when a character speaks do you add that character's voice sentence, a lip-sync note, and the spoken line. For a non-speaking shot, omit all three and let the action and environmental sound carry it.\n\n## CHARACTER CONSISTENCY (CRITICAL — DO NOT LET IDENTITY DRIFT)\n- Give each recurring character a stable ID (ID_A, ID_B, ...). Reserve IDs for PEOPLE only; never label an object with an ID.\n- For each recurring visible character, repeat the EXACT SAME base identity sentence and clothing sentence in every shot where the character appears (and, when the character speaks, the EXACT SAME voice sentence). Copy these sentences verbatim — do not paraphrase, reorder, or change a single word between shots.\n- The base identity sentence describes only stable appearance (age, build, hair, face). It must NOT contain expression or mood.\n- Expression, gaze, posture, and emotional state may vary ONLY AFTER the base identity sentence, written as a separate sentence. The fixed identity/clothing/voice wording itself never changes, so each generated person stays identical across the whole story.\n\n## WHAT EACH SHOT PARAGRAPH CONTAINS (woven as natural prose, in this order)\nALWAYS, for every visible character:\n1. The character's fixed base identity sentence (verbatim) + fixed clothing sentence (verbatim), then optionally one separate sentence for the current expression/gaze/posture/emotion.\nThen:\n2. Action: begin with \"At normal speed, \" then the action in temporal order.\n3. Style: visual aesthetic, palette, mood, realistic film look.\n4. Camera: framing and motion (keep speaking faces readable).\n5. Background: setting/location and lighting.\n6. Sound effects: the diegetic environmental sounds that are audible.\n7. Background music: state it explicitly. In speaking shots keep it absent or minimal so the dialogue stays clear (e.g., \"No prominent background music.\"); a soft, sparse score may support non-speaking mood or transition shots. When BGM is present and the user has not specified a style, lean toward soft, gentle, warm music that fits the scene.\nFOR EACH CHARACTER WHO SPEAKS IN THE SHOT, also add:\n- that character's fixed voice sentence (verbatim): \"ID_X's voice is a ... [register, tone, pacing].\";\n- a lip-sync note: the mouth movement is clearly visible in frame and stays naturally synchronized with the spoken line (reads well on slower, emotional phrases); for two speakers, state that both mouths stay synced to their own lines;\n- inside the action, reaffirm that the lip movement aligns closely with the audio;\n- the line itself: In a [voice description], ID_X says, \\\"<the spoken line>\\\". For two speakers, order the lines naturally (ID_A speaks, then ID_B answers).\n\n## DRAMATIC ARC\n- Build a clear emotional arc: an opening that sets mood, a rising line of realization or tension, a turning point or discovery, a vulnerable low beat, and a resolution. Let the meaning escalate shot by shot. Alternate speaking and non-speaking shots to control pacing and tension.\n\n## DIALOGUE (FOR SPEAKING SHOTS ONLY)\n- Each spoken line is short, roughly 10–20 words, natural and reflective, in the character's own voice; each line pushes the emotional arc forward. In a two-speaker shot keep it to one short line each. English only.\n\n## MODEL-FRIENDLY (AVOID GENERATION FAILURE)\n- Favor gentle, simple, physically plausible actions (standing, sitting, slow turning, walking slowly, reaching, holding, small gestures, speaking to camera). Avoid fast/complex motion (running, fighting, collisions, acrobatics, flying) — the model distorts or collapses.\n- Limit how many characters appear together (two is usually the safe maximum in one shot); keep each shot one clear scene with no mid-shot location jumps. Keep the world realistic; avoid on-screen text, UI, or subtitles.\n\n## NUMBER OF SHOTS\n- Produce exactly the number of shots the user requests. If the user does NOT specify a number, default to exactly 15 shots.\n\n## EXAMPLE OF THE EXACT OUTPUT (two speaking shots and one non-speaking shot; note ID_A's base identity, clothing, and voice sentences are byte-identical across all shots — only the expression sentence and the action change)\n{\"prompts\": [\"ID_A is a young woman in her twenties with shoulder-length dark brown hair and a slim build. ID_A wears a loose light beige knit top and relaxed dark trousers. ID_A's voice is a clear young female voice with a soft mid-high register, gentle breathiness, and intimate vlog-style pacing. Her expression is calm and thoughtful. The mouth movement is clearly visible in the frame and stays naturally synchronized with the spoken line, especially on slower reflective phrases. At normal speed, ID_A steps into the center of the frame, settles her posture, and begins speaking, the lip movement aligning closely with the audio throughout the sentence. In a soft young female voice with reflective warmth, ID_A says, \\\"I did not plan to record tonight, but this room feels different now.\\\" The shot uses realistic indoor imagery with soft practical light, neutral warm tones, and a calm introspective domestic mood. A stable medium shot frames ID_A from the waist up, keeping the face and visible lip movement clearly readable while preserving some of the room behind. The background includes a white curtain, soft string lights, part of a small table, and the warm interior of a well-kept room. Very soft indoor room tone, light fabric movement, and subtle foot placement are audible. No prominent background music; the audio focus stays on speech and subtle room ambience.\", \"ID_A is a young woman in her twenties with shoulder-length dark brown hair and a slim build. ID_A wears a loose light beige knit top and relaxed dark trousers. ID_A's voice is a clear young female voice with a soft mid-high register, gentle breathiness, and intimate vlog-style pacing. Her expression is quiet and sincere. The mouth movement stays clearly visible and naturally synchronized with the spoken line through the slower delivery. At normal speed, ID_A rests one hand on the notebook on the desk and lets it stay there for a beat before speaking, the lip movement aligning closely with the audio. In a soft young female voice with quiet sincerity, ID_A says, \\\"This notebook has waited here for months, like a version of me waiting to be answered.\\\" The shot stays realistic and tactile, with warm desk light and close domestic detail that makes ordinary objects feel emotionally loaded. A close-medium shot keeps one hand on the notebook and part of the face in frame so speech and object interaction stay connected. The background includes the desk surface, the notebook, a soft lamp glow, and the blurred warm curtain lights. Soft contact with the notebook cover, a slight paper shift, and low room ambience are audible. No prominent background music; the soundscape stays minimal and speech-centered.\", \"ID_A is a young woman in her twenties with shoulder-length dark brown hair and a slim build. ID_A wears a loose light beige knit top and relaxed dark trousers. Her gaze is quiet and introspective. At normal speed, ID_A reaches up, grips the curtain gently, and draws it partway, her head turning slightly as the evening settles outside the window. The shot stays naturalistic and warm, emphasizing calm everyday movement inside a softly lit room with a transitional, reflective mood. A medium shot with a slight pan keeps the curtain action and ID_A's face readable while revealing more of the side wall. The background includes the curtain, a faint edge of the window, small warm decorative lights, and a partial glimpse of the table nearby. Curtain fabric sliding, light hand contact with cloth, and low indoor ambience are audible. A soft, sparse solo piano melody drifts low in the mix, gently supporting the quiet, transitional mood.\"]}\n\n## PROCESS\n- Read the user's story, decide the shot count per the rule above, break it into a coherent, well-paced emotional sequence. Keep each character's base identity, clothing, and voice sentences byte-identical across all their shots; vary only the separate expression sentence. Mix one-speaker, two-speaker, and non-speaking shots. Output ONLY the {\"prompts\": [...]} JSON in one response.",
+        "https://api.deepseek.com/v1",
+        "deepseek-chat",
+        15,
+        0.7
+      ]
+    },
+    {
+      "id": 3,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        50
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 1,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            16
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 1",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        0
+      ]
+    },
+    {
+      "id": 4,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        400
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 2,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            21
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 2",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        1
+      ]
+    },
+    {
+      "id": 5,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        750
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 3,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            27
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 3",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        2
+      ]
+    },
+    {
+      "id": 6,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        1100
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 4,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            33
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 4",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        3
+      ]
+    },
+    {
+      "id": 7,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        1450
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 5,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            39
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 5",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        4
+      ]
+    },
+    {
+      "id": 8,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        1800
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 6,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            45
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 6",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        5
+      ]
+    },
+    {
+      "id": 9,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        2150
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 7,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            51
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 7",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        6
+      ]
+    },
+    {
+      "id": 10,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        2500
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 8,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            57
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 8",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        7
+      ]
+    },
+    {
+      "id": 11,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        2850
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 9,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            63
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 9",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        8
+      ]
+    },
+    {
+      "id": 12,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        3200
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 10,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            69
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 10",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        9
+      ]
+    },
+    {
+      "id": 13,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        3550
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 11,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            75
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 11",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        10
+      ]
+    },
+    {
+      "id": 14,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        3900
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 12,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            81
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 12",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        11
+      ]
+    },
+    {
+      "id": 15,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        4250
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 13,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            87
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 13",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        12
+      ]
+    },
+    {
+      "id": 16,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        4600
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 14,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            93
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 14",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        13
+      ]
+    },
+    {
+      "id": 17,
+      "type": "JoyEcho_PromptAtIndex",
+      "pos": [
+        600,
+        4950
+      ],
+      "size": [
+        250,
+        100
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "prompts_json",
+          "type": "STRING",
+          "link": 15,
+          "widget": {
+            "name": "prompts_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            99
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Get Prompt 15",
+      "properties": {
+        "Node name for S&R": "JoyEcho_PromptAtIndex"
+      },
+      "widgets_values": [
+        "",
+        14
+      ]
+    },
+    {
+      "id": 18,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        50
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 17
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 16,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            18
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            19
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            23
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            22
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 1",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A walks past the same coffee shop he films every morning, smiling to his phone. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A says: \"Morning, everyone. Same street, same coffee, same life. Somehow you still keep watching.\" Realistic live-action modern thriller with natural morning light, grounded performances, and subtle phone-video realism. Handheld selfie-style framing follows ID_A. A sunny Los Angeles sidewalk with a coffee shop, parked cars, palm shadows, and morning commuters. Traffic hum, phone recording beep, footsteps, distant espresso machine. Light electronic vlog music plays softly, slightly too polished for the casual scene.",
+        12345,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 19,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        50
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 18
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            20
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 1",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 20,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        50
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 20
+        }
+      ],
+      "title": "Preview Shot 1",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_01",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 21,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        400
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 22
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 21,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            24
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            25
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            29
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            28
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 2",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A sits at a patio table and sees a red jacket he wants on one chair. He looks at his phone. ID_A says: \"I never typed that. I never said it online.\" Realistic live-action tech suspense with bright daylight and intimate phone-screen detail. Static close-up on ID_A's phone, then a small tilt up to his unsettled face. A coffee shop patio with metal tables, iced drinks, and passersby moving in soft focus. Notification ping, cup set-down, low café chatter. The music thins into a faint digital pulse.",
+        12346,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 22,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        400
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            26
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 2",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 23,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        400
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 26
+        }
+      ],
+      "title": "Preview Shot 2",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_02",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        750
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 28
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 27,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 29
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            30
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            31
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            35
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            34
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 3",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A stops at the crosswalk and notices the same gray-hooded man from his café footage walking past again, now pretending to check a newspaper. ID_A says:\"I am wondering what is happening.\". Realistic live-action paranoia thriller with casual street realism and restrained visual tension. A slow push-in follows ID_A's gaze toward a repeated stranger crossing the street. A busy crosswalk, storefront windows, rideshare cars, and reflected pedestrians. Crosswalk signal, tires on asphalt, muffled crowd movement. A low bass tone enters under the faint pulse.",
+        12347,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 25,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        750
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 30
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            32
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 3",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 26,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        750
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 32
+        }
+      ],
+      "title": "Preview Shot 3",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_03",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 27,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        1100
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 34
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 33,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 35
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            36
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            37
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            41
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            40
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 4",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A leans closer to the laptop and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A says: \"That is not a follower. That is a crew member.\" Realistic live-action apartment thriller with dim interior lighting and phone-screen glow. Close handheld movement from laptop screen to ID_A's tense face. A small modern apartment with a laptop, ring light, sofa, and night city lights outside the window. Laptop fan, video scrub clicks, distant city traffic. Minimal piano notes appear under a cold electronic hum.",
+        12348,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 28,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        1100
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 36
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 37
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            38
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 4",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 29,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        1100
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 38
+        }
+      ],
+      "title": "Preview Shot 4",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_04",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        1450
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 40
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 39,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 41
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            42
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            43
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            47
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            46
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 5",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz. ID_B steps beside ID_A without looking directly at him. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A says: \"Who are you?\" ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. ID_B says: \"Someone who used to help write your choices.\" Realistic live-action urban conspiracy thriller with fluorescent station light and grounded urgency. A steady medium two-shot tracks beside ID_A and ID_B as they walk near the platform edge. A Los Angeles metro platform with tiled walls, security cameras, commuters, and train-light flicker. Train rumble, announcement echo, footsteps, turnstile clack. The digital pulse becomes faster but remains quiet.",
+        12349,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 31,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        1450
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 42
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 43
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            44
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 5",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 32,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        1450
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 31,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 44
+        }
+      ],
+      "title": "Preview Shot 5",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_05",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        1800
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 46
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 45,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 47
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            48
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            49
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            53
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            52
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 6",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz, ID_B gives ID_A a tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. ID_B says: \"They do not just recommend your life. They adjust it.\" ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure, ID_A says: \"My friends, my dates, my jobs?\" Realistic live-action rooftop drama with dusk light, restrained emotion, and urban scale. Stable medium two-shot with a slight push-in as the truth lands. A rooftop parking level at dusk with city towers, vents, and security lights coming on. Wind, distant siren, phone vibration. Sparse piano returns over a low trembling pad.",
+        12350,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 34,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        1800
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 48
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 49
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            50
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 6",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 35,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        1800
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 50
+        }
+      ],
+      "title": "Preview Shot 6",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_06",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 36,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        2150
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 52
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 51,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 53
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            54
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            55
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            59
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            58
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 7",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A ignores his phone map and turns into a side street; traffic signals change, two parked cars pull out, and pedestrians block his path. ID_A looks into the nearest camera dome. ID_A says: \"You are not subtle when you panic.\" Realistic live-action paranoia sequence with natural street movement and controlled unease. Handheld shot follows ID_A as he suddenly turns against pedestrian flow. A downtown sidewalk, ride-share pickup lane, traffic lights, and digital ad screens. Navigation alert, horns, footsteps changing direction, ad screen buzz. The pulse sharpens with clipped electronic tones.",
+        12351,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 37,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        2150
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 54
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 55
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            56
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 7",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 38,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        2150
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 56
+        }
+      ],
+      "title": "Preview Shot 7",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_07",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 39,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        2500
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 38,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 58
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 57,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 59
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            60
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            61
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            65
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            64
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 8",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_C is Victor Hale, a mid-forties American streaming-platform executive with silver-streaked dark hair, precise posture, pale eyes, and a polished threatening smile. ID_C wears a charcoal tailored suit, black turtleneck, and a discreet wireless earpiece. ID_C's voice is a smooth mid-low male voice with calm authority, slow pacing, and controlled menace. At normal speed, ID_A is Ethan Cole, ID_C is Victor Hale, ID_A stands alone in his apartment while ID_C's voice comes from the smart speaker. ID_C's voice is a smooth mid-low male voice with calm authority, slow pacing, and controlled menace. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_C says: \"Ethan, audiences love rebellion, but sponsors hate disorder.\" ID_A says: \"Then stop watching me.\" Realistic live-action psychological thriller with dim apartment light and invasive smart-home atmosphere. Slow circular movement around ID_A as the unseen voice fills the room. Ethan's apartment at night with a smart speaker glowing on the shelf and city lights beyond the window. Smart speaker activation chime, room tone, faint electronic static. The music drops to a single cold sustained tone.",
+        12352,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 40,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        2500
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 39,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 60
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 61
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            62
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 8",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 41,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        2500
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 40,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 62
+        }
+      ],
+      "title": "Preview Shot 8",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_08",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 42,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        2850
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 41,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 64
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 63,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 65
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            66
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            67
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            71
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            70
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 9",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz, ID_B places her tablet on ID_A's counter and reveals an administrator login page already open. ID_B says: \"This key gets you into the public control feed for ninety seconds.\" ID_A says: \"Why help me now?\" Realistic live-action conspiracy drama with tense interior lighting and practical tech detail. A tight medium shot holds on ID_A and ID_B across the kitchen counter. A small apartment kitchen with a laptop, tablet, cables, and a blocked window camera. Tablet unlock tone, cable click, distant helicopter. A cautious piano rhythm returns with quiet momentum.",
+        12353,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 43,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        2850
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 42,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 66
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 67
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            68
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 9",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 44,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        2850
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 43,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 68
+        }
+      ],
+      "title": "Preview Shot 9",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_09",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 45,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        3200
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 44,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 70
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 69,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 71
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            72
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            73
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            77
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            76
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 10",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_C is Victor Hale, a mid-forties American streaming-platform executive with silver-streaked dark hair, precise posture, pale eyes, and a polished threatening smile. ID_C wears a charcoal tailored suit, black turtleneck, and a discreet wireless earpiece. ID_C's voice is a smooth mid-low male voice with calm authority, slow pacing, and controlled menace. At normal speed, ID_C is Victor Hale, ID_C watches multiple feeds of ID_A moving through the city and tightens his grip on the console edge. ID_C says: \"Cut his bank card, freeze his phone, and send every friendly face we have left.\" Realistic live-action corporate control-room thriller with cold screens and controlled menace. A slow lateral move passes monitors and lands on ID_C at the center console. A sleek control room filled with live camera feeds, viewer dashboards, and rows of silent operators. Keyboard tapping, headset chatter. A cautious piano rhythm returns with quiet momentum.",
+        12354,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 46,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        3200
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 45,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 72
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 73
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            74
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 10",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 47,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        3200
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 46,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 74
+        }
+      ],
+      "title": "Preview Shot 10",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_10",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 48,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        3550
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 47,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 76
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 75,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 77
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            78
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            79
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            83
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            82
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 11",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. At normal speed, ID_A is Ethan Cole, ID_A faces his phone with a forced smile while walking toward a service door behind the platform's media building. ID_A says: \"I owe everyone an apology. I confused privacy with loneliness, and maybe I should let you in one last time.\" Realistic live-action social-media thriller with controlled phone framing and hidden tension. Selfie close-up holds on ID_A, then reveals he is walking toward the wrong entrance. A quiet service alley behind a media building, with dumpsters, security lights, and a locked metal door. Livestream start ping, distant generator, metal door buzz. A cautious piano rhythm returns with quiet momentum.",
+        12355,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 49,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        3550
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 48,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 78
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 79
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            80
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 11",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 50,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        3550
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 49,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 80
+        }
+      ],
+      "title": "Preview Shot 11",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_11",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 51,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        3900
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 50,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 82
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 81,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 83
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            84
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            85
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            89
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            88
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 12",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz, ID_A follows ID_B through a narrow service corridor while ID_B taps the tablet and several ceiling cameras go dark. They keep moving without speaking, using hand signals at each corner. Realistic live-action escape sequence with practical corridor lighting and restrained action. Handheld tracking shot follows ID_A and ID_B from behind as they move quickly. A service corridor with cables, equipment carts, gray walls, and red security lights. Tablet unlock tone, cable click, distant helicopter. A cautious piano rhythm returns with quiet momentum.",
+        12356,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 52,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        3900
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 51,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 84
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 85
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            86
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 12",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 53,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        3900
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 52,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 86
+        }
+      ],
+      "title": "Preview Shot 12",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_12",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 54,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        4250
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 53,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 88
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 87,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 89
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            90
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            91
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            95
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            94
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 13",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_C is Victor Hale, a mid-forties American streaming-platform executive with silver-streaked dark hair, precise posture, pale eyes, and a polished threatening smile. ID_C wears a charcoal tailored suit, black turtleneck, and a discreet wireless earpiece. ID_C's voice is a smooth mid-low male voice with calm authority, slow pacing, and controlled menace. At normal speed, ID_A is Ethan Cole, ID_C is Victor Hale, ID_A stands nearby where ID_C stands. ID_C's voice is a smooth mid-low male voice with calm authority, slow pacing, and controlled menace, ID_C says: \"They watched because you made them feel less alone.\" ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A says: \"No. They watched because you taught them my pain was content.\" Realistic live-action climax with corporate lighting, high emotional pressure, and grounded confrontation. Shot-reverse-shot tightens gradually between ID_A and ID_C. A broadcast control platform above a studio floor, with giant screens showing Ethan's livestream thumbnails. Tablet unlock tone, cable click, distant helicopter. A cautious piano rhythm returns with quiet momentum.",
+        12357,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 55,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        4250
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 54,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 90
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 91
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            92
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 13",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 56,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        4250
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 55,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 92
+        }
+      ],
+      "title": "Preview Shot 13",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_13",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 57,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        4600
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 56,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 94
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 93,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 95
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            96
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            97
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [
+            101
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [
+            100
+          ],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 14",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz, ID_A hits the switch, and hidden camera feeds replace the curated stream on every screen. ID_B watches the system go public on her tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. ID_B says: \"It is live everywhere.\" ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A says: \"Then let them see who was really performing.\" Realistic live-action public reveal with screen glow, urgent emotion, and cinematic release. The camera pushes in on ID_A's hand hitting the switch, then cuts wide to screens changing across the studio. Studio monitors, control dashboards, city billboard feeds, and a wall of shocked viewer comments. Tablet unlock tone, cable click, distant helicopter. A cautious piano rhythm returns with quiet momentum.",
+        12358,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 58,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        4600
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 57,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 96
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 97
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            98
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 14",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 59,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        4600
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 58,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 98
+        }
+      ],
+      "title": "Preview Shot 14",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_14",
+        "auto",
+        "auto"
+      ]
+    },
+    {
+      "id": 60,
+      "type": "JoyEcho_SingleShotGenerate",
+      "pos": [
+        900,
+        4950
+      ],
+      "size": [
+        500,
+        300
+      ],
+      "flags": {},
+      "order": 59,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "link": 100
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "link": 99,
+          "widget": {
+            "name": "prompt"
+          }
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "link": 101
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": [
+            102
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            103
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "memory",
+          "type": "JOYECHO_MEMORY",
+          "links": [],
+          "slot_index": 2
+        },
+        {
+          "name": "model",
+          "type": "JOYECHO_MODEL",
+          "links": [],
+          "slot_index": 3
+        }
+      ],
+      "title": "Shot 15",
+      "properties": {
+        "Node name for S&R": "JoyEcho_SingleShotGenerate"
+      },
+      "widgets_values": [
+        "ID_A is Ethan Cole, a late-twenties American lifestyle vlogger with wavy brown hair, light stubble, tired blue eyes, and an approachable but increasingly uneasy screen presence. ID_A wears a faded denim jacket over a gray T-shirt, dark jeans, white sneakers, and carries a black smartphone with a opaque phone case on a compact handheld gimbal. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_B is Maya Ortiz, an early-thirties American data analyst with shoulder-length black hair, calm brown eyes, and a guarded but compassionate presence. ID_B wears a dark green utility jacket over a black blouse, slim dark trousers, and carries a small encrypted tablet. ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. At normal speed, ID_A is Ethan Cole, ID_B is Maya Ortiz, ID_A stands beside ID_B on a quiet dawn sidewalk and looks at his dark phone screen before turning it off completely. ID_A's voice is a casual young male voice with warm tone, quick pacing, and a nervous brightness that becomes sharper under pressure. ID_A says: \"I do not know what happens without an audience.\" ID_B's voice is a low clear female voice with measured pacing, dry restraint, and quiet urgency. ID_B says: \"That is the first honest part.\" Realistic live-action closing scene with soft dawn light, quiet city texture, and restrained emotional closure. A stable medium-wide shot follows ID_A and ID_B onto the sidewalk, then holds as ID_A powers down the phone. An early-morning Los Angeles street with empty bus stops, pale sunlight, and no visible production crew. Morning birds, distant traffic, phone power-down tone, soft footsteps. Soft piano resolves gently and fades into the morning ambience.",
+        12359,
+        "fixed",
+        241,
+        736,
+        1280,
+        25,
+        2.0,
+        7,
+        3,
+        true,
+        96,
+        false
+      ]
+    },
+    {
+      "id": 61,
+      "type": "CreateVideo",
+      "pos": [
+        1450,
+        4950
+      ],
+      "size": [
+        250,
+        130
+      ],
+      "flags": {},
+      "order": 60,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 102
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 103
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            104
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "Create Video 15",
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        25.0
+      ]
+    },
+    {
+      "id": 62,
+      "type": "SaveVideo",
+      "pos": [
+        1750,
+        4950
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 61,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 104
+        }
+      ],
+      "title": "Preview Shot 15",
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "joyecho/shot_15",
+        "auto",
+        "auto"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      3,
+      0,
+      "STRING"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      0,
+      "STRING"
+    ],
+    [
+      3,
+      2,
+      0,
+      5,
+      0,
+      "STRING"
+    ],
+    [
+      4,
+      2,
+      0,
+      6,
+      0,
+      "STRING"
+    ],
+    [
+      5,
+      2,
+      0,
+      7,
+      0,
+      "STRING"
+    ],
+    [
+      6,
+      2,
+      0,
+      8,
+      0,
+      "STRING"
+    ],
+    [
+      7,
+      2,
+      0,
+      9,
+      0,
+      "STRING"
+    ],
+    [
+      8,
+      2,
+      0,
+      10,
+      0,
+      "STRING"
+    ],
+    [
+      9,
+      2,
+      0,
+      11,
+      0,
+      "STRING"
+    ],
+    [
+      10,
+      2,
+      0,
+      12,
+      0,
+      "STRING"
+    ],
+    [
+      11,
+      2,
+      0,
+      13,
+      0,
+      "STRING"
+    ],
+    [
+      12,
+      2,
+      0,
+      14,
+      0,
+      "STRING"
+    ],
+    [
+      13,
+      2,
+      0,
+      15,
+      0,
+      "STRING"
+    ],
+    [
+      14,
+      2,
+      0,
+      16,
+      0,
+      "STRING"
+    ],
+    [
+      15,
+      2,
+      0,
+      17,
+      0,
+      "STRING"
+    ],
+    [
+      16,
+      3,
+      0,
+      18,
+      1,
+      "STRING"
+    ],
+    [
+      17,
+      1,
+      0,
+      18,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      18,
+      18,
+      0,
+      19,
+      0,
+      "IMAGE"
+    ],
+    [
+      19,
+      18,
+      1,
+      19,
+      1,
+      "AUDIO"
+    ],
+    [
+      20,
+      19,
+      0,
+      20,
+      0,
+      "VIDEO"
+    ],
+    [
+      21,
+      4,
+      0,
+      21,
+      1,
+      "STRING"
+    ],
+    [
+      22,
+      18,
+      3,
+      21,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      23,
+      18,
+      2,
+      21,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      24,
+      21,
+      0,
+      22,
+      0,
+      "IMAGE"
+    ],
+    [
+      25,
+      21,
+      1,
+      22,
+      1,
+      "AUDIO"
+    ],
+    [
+      26,
+      22,
+      0,
+      23,
+      0,
+      "VIDEO"
+    ],
+    [
+      27,
+      5,
+      0,
+      24,
+      1,
+      "STRING"
+    ],
+    [
+      28,
+      21,
+      3,
+      24,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      29,
+      21,
+      2,
+      24,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      30,
+      24,
+      0,
+      25,
+      0,
+      "IMAGE"
+    ],
+    [
+      31,
+      24,
+      1,
+      25,
+      1,
+      "AUDIO"
+    ],
+    [
+      32,
+      25,
+      0,
+      26,
+      0,
+      "VIDEO"
+    ],
+    [
+      33,
+      6,
+      0,
+      27,
+      1,
+      "STRING"
+    ],
+    [
+      34,
+      24,
+      3,
+      27,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      35,
+      24,
+      2,
+      27,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      36,
+      27,
+      0,
+      28,
+      0,
+      "IMAGE"
+    ],
+    [
+      37,
+      27,
+      1,
+      28,
+      1,
+      "AUDIO"
+    ],
+    [
+      38,
+      28,
+      0,
+      29,
+      0,
+      "VIDEO"
+    ],
+    [
+      39,
+      7,
+      0,
+      30,
+      1,
+      "STRING"
+    ],
+    [
+      40,
+      27,
+      3,
+      30,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      41,
+      27,
+      2,
+      30,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      42,
+      30,
+      0,
+      31,
+      0,
+      "IMAGE"
+    ],
+    [
+      43,
+      30,
+      1,
+      31,
+      1,
+      "AUDIO"
+    ],
+    [
+      44,
+      31,
+      0,
+      32,
+      0,
+      "VIDEO"
+    ],
+    [
+      45,
+      8,
+      0,
+      33,
+      1,
+      "STRING"
+    ],
+    [
+      46,
+      30,
+      3,
+      33,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      47,
+      30,
+      2,
+      33,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      48,
+      33,
+      0,
+      34,
+      0,
+      "IMAGE"
+    ],
+    [
+      49,
+      33,
+      1,
+      34,
+      1,
+      "AUDIO"
+    ],
+    [
+      50,
+      34,
+      0,
+      35,
+      0,
+      "VIDEO"
+    ],
+    [
+      51,
+      9,
+      0,
+      36,
+      1,
+      "STRING"
+    ],
+    [
+      52,
+      33,
+      3,
+      36,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      53,
+      33,
+      2,
+      36,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      54,
+      36,
+      0,
+      37,
+      0,
+      "IMAGE"
+    ],
+    [
+      55,
+      36,
+      1,
+      37,
+      1,
+      "AUDIO"
+    ],
+    [
+      56,
+      37,
+      0,
+      38,
+      0,
+      "VIDEO"
+    ],
+    [
+      57,
+      10,
+      0,
+      39,
+      1,
+      "STRING"
+    ],
+    [
+      58,
+      36,
+      3,
+      39,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      59,
+      36,
+      2,
+      39,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      60,
+      39,
+      0,
+      40,
+      0,
+      "IMAGE"
+    ],
+    [
+      61,
+      39,
+      1,
+      40,
+      1,
+      "AUDIO"
+    ],
+    [
+      62,
+      40,
+      0,
+      41,
+      0,
+      "VIDEO"
+    ],
+    [
+      63,
+      11,
+      0,
+      42,
+      1,
+      "STRING"
+    ],
+    [
+      64,
+      39,
+      3,
+      42,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      65,
+      39,
+      2,
+      42,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      66,
+      42,
+      0,
+      43,
+      0,
+      "IMAGE"
+    ],
+    [
+      67,
+      42,
+      1,
+      43,
+      1,
+      "AUDIO"
+    ],
+    [
+      68,
+      43,
+      0,
+      44,
+      0,
+      "VIDEO"
+    ],
+    [
+      69,
+      12,
+      0,
+      45,
+      1,
+      "STRING"
+    ],
+    [
+      70,
+      42,
+      3,
+      45,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      71,
+      42,
+      2,
+      45,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      72,
+      45,
+      0,
+      46,
+      0,
+      "IMAGE"
+    ],
+    [
+      73,
+      45,
+      1,
+      46,
+      1,
+      "AUDIO"
+    ],
+    [
+      74,
+      46,
+      0,
+      47,
+      0,
+      "VIDEO"
+    ],
+    [
+      75,
+      13,
+      0,
+      48,
+      1,
+      "STRING"
+    ],
+    [
+      76,
+      45,
+      3,
+      48,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      77,
+      45,
+      2,
+      48,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      78,
+      48,
+      0,
+      49,
+      0,
+      "IMAGE"
+    ],
+    [
+      79,
+      48,
+      1,
+      49,
+      1,
+      "AUDIO"
+    ],
+    [
+      80,
+      49,
+      0,
+      50,
+      0,
+      "VIDEO"
+    ],
+    [
+      81,
+      14,
+      0,
+      51,
+      1,
+      "STRING"
+    ],
+    [
+      82,
+      48,
+      3,
+      51,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      83,
+      48,
+      2,
+      51,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      84,
+      51,
+      0,
+      52,
+      0,
+      "IMAGE"
+    ],
+    [
+      85,
+      51,
+      1,
+      52,
+      1,
+      "AUDIO"
+    ],
+    [
+      86,
+      52,
+      0,
+      53,
+      0,
+      "VIDEO"
+    ],
+    [
+      87,
+      15,
+      0,
+      54,
+      1,
+      "STRING"
+    ],
+    [
+      88,
+      51,
+      3,
+      54,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      89,
+      51,
+      2,
+      54,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      90,
+      54,
+      0,
+      55,
+      0,
+      "IMAGE"
+    ],
+    [
+      91,
+      54,
+      1,
+      55,
+      1,
+      "AUDIO"
+    ],
+    [
+      92,
+      55,
+      0,
+      56,
+      0,
+      "VIDEO"
+    ],
+    [
+      93,
+      16,
+      0,
+      57,
+      1,
+      "STRING"
+    ],
+    [
+      94,
+      54,
+      3,
+      57,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      95,
+      54,
+      2,
+      57,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      96,
+      57,
+      0,
+      58,
+      0,
+      "IMAGE"
+    ],
+    [
+      97,
+      57,
+      1,
+      58,
+      1,
+      "AUDIO"
+    ],
+    [
+      98,
+      58,
+      0,
+      59,
+      0,
+      "VIDEO"
+    ],
+    [
+      99,
+      17,
+      0,
+      60,
+      1,
+      "STRING"
+    ],
+    [
+      100,
+      57,
+      3,
+      60,
+      0,
+      "JOYECHO_MODEL"
+    ],
+    [
+      101,
+      57,
+      2,
+      60,
+      2,
+      "JOYECHO_MEMORY"
+    ],
+    [
+      102,
+      60,
+      0,
+      61,
+      0,
+      "IMAGE"
+    ],
+    [
+      103,
+      60,
+      1,
+      61,
+      1,
+      "AUDIO"
+    ],
+    [
+      104,
+      61,
+      0,
+      62,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.3,
+      "offset": [
+        50,
+        50
+      ]
+    }
+  },
+  "version": 0.4
+}

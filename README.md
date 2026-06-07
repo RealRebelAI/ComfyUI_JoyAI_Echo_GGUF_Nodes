@@ -1,13 +1,168 @@
 # ComfyUI_JoyAI_Echo
 
+[JoyAI-Echo](https://github.com/jd-opensource/JoyAI-Echo) 的 ComfyUI 节点实现 —— 分钟级多镜头音视频联合生成，带配对跨模态记忆。
+
+本实现**忠实于官方推理流程**，零精度损失。与现有社区实现的关键区别：
+
+- **完整 bf16 精度**的文本编码器 (Gemma-3-12b) —— 无 GGUF 量化
+- **正确参数**匹配官方默认值 (1280×736, 241帧, 25fps)
+- **GPU 显存优化** —— 模块热切换（无画质损失）
+- **内置 LLM 提示词增强** —— 通过云 API 调用（零本地显存占用）
+- **逐镜头即时预览** —— 每个镜头生成后立即在 ComfyUI 中播放
+
+![工作流截图](assets/workflow_screenshot.png)
+
+## 硬件要求
+
+- NVIDIA GPU **48GB+ 显存**（推荐 A6000/H100/A100 80GB）
+  - 启用热切换：去噪阶段峰值 ~46GB
+  - 启用**逐层卸载**：**24GB 显存**即可（推理更慢）
+- Python 3.11+
+- PyTorch 2.4+，CUDA 支持
+- ffmpeg（视频拼接用）
+
+## 安装
+
+### 1. 克隆到 ComfyUI 自定义节点目录
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/zhuang2002/ComfyUI_JoyAI_Echo.git
+```
+
+### 2. 安装依赖
+
+```bash
+cd ComfyUI_JoyAI_Echo
+pip install -r requirements.txt
+```
+
+或让 ComfyUI 首次启动时通过 `install.py` 自动安装。
+
+### 3. 下载模型权重
+
+| 文件 | 大小 | 来源 |
+|------|------|------|
+| `JoyAI-Echo-release.safetensors` | ~46 GB | [HuggingFace](https://huggingface.co/jdopensource/JoyAI-Echo) |
+| `gemma-3-12b-it/`（完整 bf16） | ~24 GB | [HuggingFace](https://huggingface.co/google/gemma-3-12b-it) |
+
+放在任意可访问路径，在节点中指定路径即可。
+
+## 节点说明
+
+### JoyEcho Model Loader
+
+加载所有模型组件（文本编码器、DiT 生成器、VAE）。
+
+| 输入 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| checkpoint_path | STRING | — | `JoyAI-Echo-release.safetensors` 路径 |
+| gemma_path | STRING | — | `gemma-3-12b-it` 目录路径 |
+| lora_path | STRING | "" | 可选 LoRA 权重 |
+| lora_strength | FLOAT | 1.0 | LoRA 强度 |
+| low_vram | BOOLEAN | False | 在 CPU 上加载文本编码器（节省 ~24GB 显存） |
+
+### JoyEcho Single Shot Generate
+
+**核心节点** —— 逐镜头生成，每个实例有独立的提示词文本框。通过 memory 连接链式串联多个镜头。
+
+| 输入 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| model | JOYECHO_MODEL | — | 来自 Model Loader |
+| prompt | STRING | — | 单个镜头的提示词（多行文本框） |
+| memory | JOYECHO_MEMORY | — | 可选，来自上一个镜头的记忆输出 |
+| seed | INT | 12345 | 随机种子 |
+| num_frames | INT | 241 | 每镜头帧数（必须为 1+8k） |
+| video_height | INT | 736 | 视频高度 |
+| video_width | INT | 1280 | 视频宽度 |
+| sequential_offload | BOOLEAN | False | 逐层 GPU 卸载（24GB 显卡用） |
+
+**输出**: IMAGE + AUDIO + MEMORY + MODEL
+
+显存管理（自动三阶段热切换）：
+1. 编码阶段：文本编码器上 GPU（~24GB），其他在 CPU
+2. 去噪阶段：Generator 上 GPU（~30GB），文本编码器+VAE 在 CPU
+3. 解码阶段：VAE 上 GPU，Generator+文本编码器在 CPU
+
+### JoyEcho LLM Enhance
+
+调用云 LLM API，将简短故事创意自动扩展为格式化的多镜头提示词。**零本地 GPU 显存占用**。
+
+| 输入 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| story_idea | STRING | — | 故事创意（几句话描述） |
+| mode | ENUM | long_story | 长故事/短故事模式 |
+| api_key | STRING | — | API 密钥 |
+| system_prompt | STRING | （内置默认） | LLM 系统提示词，可自定义编辑 |
+| base_url | STRING | `https://api.openai.com/v1` | API 基础 URL |
+| model_name | STRING | gpt-4o | LLM 模型名 |
+| num_shots | INT | 0 | 生成镜头数（0=LLM自行决定） |
+| temperature | FLOAT | 0.7 | 采样温度 |
+
+支持任何 OpenAI 兼容 API（OpenAI、DeepSeek 等）。
+
+### JoyEcho Prompt At Index
+
+从 JSON 提示词数组中按索引提取单条提示词。连接到 SingleShot 节点的 prompt 输入可覆盖文本框内容（可选功能）。
+
+## 工作流
+
+### 逐镜头工作流（推荐）: `workflows/joyai_echo_per_shot.json`
+
+```
+[Model Loader] → [Shot 1] → [CreateVideo] → [SaveVideo] ← 即时预览
+                    ↓ memory + model
+                 [Shot 2] → [CreateVideo] → [SaveVideo] ← 即时预览
+                    ↓ memory + model
+                 [Shot 3] → ... (共 15 镜头)
+```
+
+- 默认 15 个镜头，使用 test_002.json 提示词初始化
+- 每个镜头有独立的可编辑文本框
+- 每个镜头生成后即时预览视频
+- 记忆链保证角色/声音一致性
+- LLM Enhance 节点默认静音，启用后可自动生成并替换所有镜头的提示词
+
+## 测试提示词
+
+8 个测试提示词文件位于 `prompts/` 目录：
+
+| 文件 | 镜头数 | 描述 |
+|------|--------|------|
+| test_001.json | 15 | 年轻女性晚间 vlog |
+| test_002.json | 15 | 咖啡馆生活感悟 |
+| test_003.json | 15 | 公园散步叙事 |
+| test_004.json | 15 | 厨房烹饪场景 |
+| test_005.json | 15 | 图书馆学习 |
+| test_006.json | 15 | 晨间日常 |
+| test_007.json | 11 | 艺术工作室 |
+| test_008.json | 29 | 雨天居家 |
+
+## 致谢
+
+- [JoyAI-Echo](https://github.com/jd-opensource/JoyAI-Echo) by Echo Team @ Joy Future Academy, JD
+- [LTX-2.3](https://huggingface.co/Lightricks/LTX-2.3) by Lightricks
+- [Gemma-3](https://huggingface.co/google/gemma-3-12b-it) by Google
+
+## 许可证
+
+仅供学术研究和非商业用途（遵循上游 JoyAI-Echo 许可证）。
+
+---
+
+# ComfyUI_JoyAI_Echo (English)
+
 ComfyUI nodes for [JoyAI-Echo](https://github.com/jd-opensource/JoyAI-Echo) — minute-level multi-shot audio-video generation with paired cross-modal memory.
 
 This implementation is **faithful to the official inference pipeline** with zero precision loss. Key differences from existing community implementations:
 
 - **Full bf16 precision** for text encoder (Gemma-3-12b) — no GGUF quantization
-- **Correct parameters** matching official defaults (1280x736, 241 frames, 25fps)
+- **Correct parameters** matching official defaults (1280×736, 241 frames, 25fps)
 - **GPU memory optimization** via module hot-swap (no quality degradation)
 - **Built-in LLM prompt enhancement** via cloud API (zero local VRAM usage)
+- **Per-shot instant preview** — each shot shows a playable video in ComfyUI immediately after generation
+
+![Workflow Screenshot](assets/workflow_screenshot.png)
 
 ## Requirements
 
@@ -20,7 +175,7 @@ This implementation is **faithful to the official inference pipeline** with zero
 
 ## Installation
 
-### 1. Clone this repo into ComfyUI custom_nodes
+### 1. Clone into ComfyUI custom_nodes
 
 ```bash
 cd ComfyUI/custom_nodes
@@ -51,98 +206,52 @@ Place them anywhere accessible. You'll provide paths in the nodes.
 
 Loads all model components (text encoder, DiT generator, VAEs).
 
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| checkpoint_path | STRING | — | Path to `JoyAI-Echo-release.safetensors` |
-| gemma_path | STRING | — | Path to `gemma-3-12b-it` directory |
-| lora_path | STRING | "" | Optional LoRA weights for memory conditioning |
-| lora_strength | FLOAT | 1.0 | LoRA strength |
-| low_vram | BOOLEAN | False | Load text encoder on CPU (saves ~24GB VRAM) |
+### JoyEcho Single Shot Generate
 
-### JoyEcho Text Encode
+**Core node** — generates one shot at a time with its own editable prompt text box. Chain multiple instances via the memory output for multi-shot stories.
 
-Encodes text prompts using Gemma-3-12b. Supports multiple input formats:
+**Inputs**: model, prompt (multiline text), memory (optional, from previous shot), seed, num_frames, video_height, video_width, sequential_offload, etc.
 
-- **One prompt per line** — each line is one shot
-- **JSON object** — `{"prompts": ["shot1", "shot2", ...]}`
-- **JSON file path** — path to a `.json` file (absolute or relative to the node directory)
+**Outputs**: IMAGE + AUDIO + MEMORY + MODEL
 
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| model | JOYECHO_MODEL | — | From Model Loader |
-| prompts | STRING | — | Multi-line text, JSON, or `.json` file path |
-| release_text_encoder | BOOLEAN | True | Free ~24GB VRAM after encoding |
-
-### JoyEcho Generate (Multi-Shot)
-
-Runs the full inference pipeline with **paired audio-video memory bank**. Each shot is conditioned on previous shots through visual identity and voice timbre memory, maintaining story-level consistency.
-
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| model | JOYECHO_MODEL | — | From Model Loader |
-| conditioning | JOYECHO_COND | — | From Text Encode |
-| seed | INT | 12345 | Random seed (increments per shot) |
-| num_frames | INT | 241 | Frames per shot (must be 1+8k) |
-| video_height | INT | 736 | Video height in pixels |
-| video_width | INT | 1280 | Video width in pixels |
-| video_fps | INT | 25 | Video frame rate |
-| v2a_grad_scale | FLOAT | 2.0 | Video-to-audio cross-modal scale |
-| memory_max_size | INT | 7 | Max memory bank slots |
-| num_fix_frames | INT | 3 | Fixed (non-evictable) memory slots |
-| enable_audio_memory | BOOLEAN | True | Enable audio memory conditioning |
-| audio_memory_window_size | INT | 96 | Audio memory window size |
-| sequential_offload | BOOLEAN | False | Layer-by-layer offloading (24GB VRAM, slower) |
-
-**Outputs**: IMAGE (all frames concatenated) + AUDIO (combined waveform)
+VRAM management (automatic 3-phase hot-swap per shot):
+1. Encode phase: Text encoder on GPU (~24GB), everything else on CPU
+2. Denoise phase: Generator on GPU (~30GB), text encoder + VAE on CPU
+3. Decode phase: VAE on GPU, generator + text encoder on CPU
 
 ### JoyEcho LLM Enhance
 
-Calls a cloud LLM API to automatically expand a short story idea into properly formatted shot prompts. **Uses zero local GPU memory** — only cloud API calls.
+Calls a cloud LLM API to expand a short story idea into properly formatted shot prompts. **Zero local GPU memory usage.**
 
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
-| story_idea | STRING | — | Your story or scene idea in a few sentences |
-| mode | ENUM | long_story | `long_story (multi-shot)` or `short_story (single-shot)` |
-| api_key | STRING | — | Your API key (OpenAI, DeepSeek, etc.) |
-| base_url | STRING | `https://api.openai.com/v1` | API base URL |
-| model_name | STRING | gpt-4o | LLM model name |
-| num_shots | INT | 0 | Number of shots (0 = let LLM decide) |
-| temperature | FLOAT | 0.7 | Sampling temperature |
+- Supports any OpenAI-compatible API (OpenAI, DeepSeek, etc.)
+- System prompt is fully visible and editable in the node
+- Output can be connected via PromptAtIndex nodes to override shot prompts
 
-Supported API providers (any OpenAI-compatible API):
-- **OpenAI**: base_url = `https://api.openai.com/v1`, model = `gpt-4o`
-- **DeepSeek**: base_url = `https://api.deepseek.com/v1`, model = `deepseek-chat`
-- **Other**: Any OpenAI-compatible endpoint
+### JoyEcho Prompt At Index
 
-### JoyEcho Prompt Format (Helper)
-
-Outputs the official system prompt for LLM-based prompt writing. Use this with external LLM nodes if you prefer to handle the API call yourself.
+Extracts a single prompt from a JSON prompts array by index. Connect to SingleShot node's prompt input to override the text box (optional).
 
 ## Workflows
 
-Two ready-to-use workflows are included in the `workflows/` directory:
-
-### Basic Workflow (`joyai_echo_basic.json`)
+### Per-Shot Workflow (Recommended): `workflows/joyai_echo_per_shot.json`
 
 ```
-[Model Loader] → [Text Encode] → [Generate] → [Preview Image]
-                                              → [Preview Audio]
+[Model Loader] → [Shot 1] → [CreateVideo] → [SaveVideo] ← instant preview
+                    ↓ memory + model
+                 [Shot 2] → [CreateVideo] → [SaveVideo] ← instant preview
+                    ↓ memory + model
+                 [Shot 3] → ... (15 shots total)
 ```
 
-Loads a prompt JSON file and generates multi-shot video with memory. The Text Encode node is pre-configured with `prompts/test_001.json` (15-shot vlog story).
-
-### LLM Enhanced Workflow (`joyai_echo_llm_enhanced.json`)
-
-```
-[LLM Enhance] → [Text Encode] → [Generate] → [Preview Image]
-[Model Loader] ↗                             → [Preview Audio]
-```
-
-Enter a story idea in natural language → LLM generates shot prompts → model generates video with paired memory.
+- 15 shots pre-filled with test_002.json prompts
+- Each shot has its own editable text box
+- Instant video preview after each shot completes
+- Memory chain ensures character/voice consistency
+- LLM Enhance node muted by default; enable to auto-generate and replace all shot prompts
 
 ## Example Prompts
 
-8 test prompt files are included in `prompts/`:
+8 test prompt files included in `prompts/`:
 
 | File | Shots | Description |
 |------|-------|-------------|
@@ -152,47 +261,12 @@ Enter a story idea in natural language → LLM generates shot prompts → model 
 | test_004.json | 15 | Kitchen cooking scene |
 | test_005.json | 15 | Library study session |
 | test_006.json | 15 | Morning routine |
-| test_007.json | 15 | Art studio session |
-| test_008.json | 15 | Rainy day at home |
+| test_007.json | 11 | Art studio session |
+| test_008.json | 29 | Rainy day at home |
 
 System prompts for LLM-based prompt writing:
 - `prompts/long_story_writer_system_prompt.md` — multi-shot story generation
 - `prompts/short_story_writer_system_prompt.md` — single-shot scene generation
-
-## Memory Management
-
-The node uses the same hot-swap strategy as the official code:
-
-1. **Text encoding phase**: Text encoder on GPU (~24GB), everything else off
-2. **Denoise phase**: DiT generator on GPU (~30GB), VAEs on CPU
-3. **Decode phase**: Generator moved to CPU, VAE decoders + vocoder on GPU
-
-This ensures peak VRAM never exceeds ~48GB despite the model totaling ~70GB+ in parameters.
-
-### Paired Audio-Video Memory Bank
-
-For multi-shot generation, the memory bank maintains:
-- **Video memory**: Key frames from previous shots for visual identity consistency
-- **Audio memory**: Voice timbre and audio characteristics for audio consistency
-- Memory slots are managed with configurable max size and fixed slots
-
-### Sequential Offload Mode (24GB GPUs)
-
-Enable `sequential_offload` in the Generate node to run on 24GB cards (e.g. RTX 4090, 3090):
-
-- Only one transformer block (~600MB) is loaded to GPU at a time
-- Non-block layers (~2GB) stay on GPU permanently
-- Blocks use pinned CPU memory for fast transfers
-- **Trade-off**: ~3-5x slower inference per shot
-- **Zero precision loss** — identical output to full-VRAM mode
-
-## Differences from Official Pipeline
-
-This node produces **identical results** to `python inference.py` when using the same parameters:
-- Same denoising schedule (8 steps, DMD distilled sigmas)
-- Same flow-matching noise formula
-- Same paired audio-video memory bank with max_response window selection
-- Same RoPE position encoding
 
 ## Acknowledgements
 
