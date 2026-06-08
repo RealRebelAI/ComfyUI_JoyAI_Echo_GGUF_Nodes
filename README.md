@@ -1,5 +1,6 @@
 # ComfyUI_JoyAI_Echo
 
+-WORK IN PROGRESS-
 
 GGUF implementation.
 
