@@ -4,6 +4,10 @@
 
 GGUF implementation.
 
+
+<img width="1516" height="522" alt="Screenshot (152)" src="https://github.com/user-attachments/assets/14be78a1-748a-418d-bf91-b69f1539d93b" />
+
+
 gguf files:
 https://huggingface.co/realrebelai/JoyAI-Echo_GGUF/tree/main
 
