@@ -1,6 +1,8 @@
 # ComfyUI_JoyAI_Echo
 
 
+git clone https://github.com/RealRebelAI/ComfyUI_JoyAI_Echo_GGUF_Nodes.git
+
 ## Acknowledgements
 
 - [JoyAI-Echo](https://github.com/jd-opensource/JoyAI-Echo) by Echo Team @ Joy Future Academy, JD
