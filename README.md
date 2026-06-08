@@ -1,6 +1,13 @@
 # ComfyUI_JoyAI_Echo
 
 
+GGUF implementation.
+
+gguf files:
+https://huggingface.co/realrebelai/JoyAI-Echo_GGUF/tree/main
+
+
+
 git clone https://github.com/RealRebelAI/ComfyUI_JoyAI_Echo_GGUF_Nodes.git
 
 ## Acknowledgements
