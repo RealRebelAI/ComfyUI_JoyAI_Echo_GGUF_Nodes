@@ -55,7 +55,7 @@ ComfyUI/models/text_encoders/gemma/
 ```
 
 
-A `configs/joyai_echo_config.json` ships with the pack, and the node defaults to it automatically — no setup needed. If you ever need to regenerate it from the full checkpoint:
+
 ```bash
 python dump_joyai_config.py --src D:\path\to\JoyAI-Echo-release.safetensors
 ```
