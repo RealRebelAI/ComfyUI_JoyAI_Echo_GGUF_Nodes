@@ -12,7 +12,7 @@ A faithful GGUF implementation of JoyAI-Echo for ComfyUI, built so the model can
 <!-- Add a preview image at assets/preview.png and it will show here -->
 
 ---
-What this is
+What this is:
 JoyAI-Echo is a modified LTX-2.3 diffusion transformer that generates video and matching audio from a text prompt. The full release is a single ~46 GB bf16 checkpoint designed for big GPUs.
 This pack makes it runnable on a typical gaming PC by:
 Loading the DiT as a GGUF (Q2_K / Q4_K_M) instead of full bf16.
