@@ -1,5 +1,8 @@
-<img width="1417" height="828" alt="Screenshot (153)" src="https://github.com/user-attachments/assets/7e82daf2-2852-4859-94b2-408903804834" />
 # ComfyUI_JoyAI_Echo
+
+
+<img width="1417" height="828" alt="Screenshot (153)" src="https://github.com/user-attachments/assets/7e82daf2-2852-4859-94b2-408903804834" />
+
 
 -WORK IN PROGRESS-
 
