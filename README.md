@@ -10,7 +10,7 @@ Run JD's JoyAI-Echo (text → video + audio) on consumer hardware.
 A faithful GGUF implementation of JoyAI-Echo for ComfyUI, built so the model can run on an 8 GB GPU with 16 GB system RAM instead of the ~48 GB the full checkpoint expects.
 > ⚠️ **Work in progress / experimental.** This is a heavy model on small hardware. Loads and the first encode are slow (see [Performance](#performance)). It works, but it asks for patience.
 <!-- Add a preview image at assets/preview.png and it will show here -->
-![Preview](assets/preview.png)
+
 ---
 What this is
 JoyAI-Echo is a modified LTX-2.3 diffusion transformer that generates video and matching audio from a text prompt. The full release is a single ~46 GB bf16 checkpoint designed for big GPUs.
