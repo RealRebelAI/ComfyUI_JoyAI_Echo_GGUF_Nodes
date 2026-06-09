@@ -1,7 +1,7 @@
 # ComfyUI_JoyAI_Echo
 
 
-<img width="1285" height="788" alt="Screenshot (155)" src="https://github.com/user-attachments/assets/b594da9f-45a8-4059-8323-58f31de4e51e" />
+
 
 
 
