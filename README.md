@@ -56,9 +56,7 @@ ComfyUI/models/text_encoders/gemma/
 
 
 
-```bash
-python dump_joyai_config.py --src D:\path\to\JoyAI-Echo-release.safetensors
-```
+
 ---
 Usage
 Build a minimal graph:
