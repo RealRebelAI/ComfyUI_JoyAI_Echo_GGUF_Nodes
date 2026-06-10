@@ -1,5 +1,10 @@
 # ComfyUI JoyAI-Echo GGUF Nodes
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/RealRebelAI/ComfyUI_JoyAI_Echo_GGUF_Nodes/main/Screenshot_20260610_113536_Chrome.jpg" alt="JoyAI Echo GGUF ComfyUI Workflow" width="80%">
+</p>
+
+
 **Run JD's JoyAI-Echo (text → video + audio) on consumer hardware.**
 
 A faithful GGUF implementation of [JoyAI-Echo](https://github.com/jd-opensource/JoyAI-Echo) for ComfyUI, built so the model can run on an 8 GB GPU with 16 GB system RAM instead of the ~48 GB the full checkpoint expects.
