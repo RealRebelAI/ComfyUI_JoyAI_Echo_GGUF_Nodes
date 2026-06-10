@@ -95,15 +95,7 @@ The text encoder is the standard Gemma-3-12B fp8 file — not rehosted here. Get
 ComfyUI/models/text_encoders/gemma/
 ```
 
-Gemma also needs its small sidecar files. Put these five in a `gemma_assets/` folder inside the node pack **or** next to the Gemma `.safetensors`:
 
-```
-tokenizer.model
-tokenizer_config.json
-config.json
-special_tokens_map.json
-preprocessor_config.json
-```
 
 Get them from [`google/gemma-3-12b-it`](https://huggingface.co/google/gemma-3-12b-it) (the small config/tokenizer files only — **not** the weight shards). If any are missing, the node tells you exactly which ones and where to put them.
 
