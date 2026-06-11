@@ -87,17 +87,7 @@ Pick everything from the dropdowns on the node. `.gguf` encoders are auto-detect
 | Q4_K_M | ~13 GB | **recommended** — sharp, coherent talking heads |
 | Q6_K | ~18 GB | closest to bf16 |
 | *_RM (Rebels Mix) | +1–2 GB | same base with critical layers boosted to Q8_0 (unsloth-style) |
-### Text encoder (Gemma-3, downloaded separately)
-
-The text encoder is the standard Gemma-3-12B fp8 file — not rehosted here. Get **`gemma_3_12B_it_fp8_scaled.safetensors`** (Comfy-Org) and place it in:
-
-```
-ComfyUI/models/text_encoders/gemma/
-```
-
-
-
-Get them from [`google/gemma-3-12b-it`](https://huggingface.co/google/gemma-3-12b-it) (the small config/tokenizer files only — **not** the weight shards). If any are missing, the node tells you exactly which ones and where to put them.
+#
 
 ### Architecture config
 
