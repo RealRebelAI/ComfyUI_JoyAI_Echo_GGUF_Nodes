@@ -637,22 +637,35 @@ class RebelsJE_TextEncoder:
             ]
             sidecar_files = ["tokenizer.model", "tokenizer_config.json", "config.json",
                              "special_tokens_map.json", "preprocessor_config.json"]
-            def _config_ok(path):
-                """Only accept a config.json that matches the text-only layout this
-                pipeline was built against. Users sometimes drop the config from
-                google/gemma-3-12b-it next to the weights -- that one is the
-                MULTIMODAL config (nested text_config) and builds the wrong config
-                object ('Gemma3TextConfig has no attribute rope_local_base_freq')."""
+            def _normalize_gemma_config(path):
+                """Load ANY Gemma-3 config.json (our bundled text-only one OR the
+                multimodal one from google/gemma-3-12b-it that users often
+                download) and return the text-only dict this pipeline needs,
+                with every field JD's encoder configurator reads guaranteed
+                present. Returns None if the file isn't a Gemma-3 config at all."""
+                import json as _json
                 try:
-                    import json as _json
                     with open(path, "r", encoding="utf-8") as fh:
                         cj = _json.load(fh)
-                    if "text_config" in cj and "rope_local_base_freq" not in cj:
-                        return False          # multimodal google config
-                    mt = str(cj.get("model_type", ""))
-                    return "gemma3" in mt
                 except Exception:
-                    return False
+                    return None
+                if "gemma3" not in str(cj.get("model_type", "")) and "text_config" not in cj:
+                    return None
+                # multimodal google layout -> pull the nested text config
+                if "text_config" in cj and isinstance(cj["text_config"], dict):
+                    cj = dict(cj["text_config"])
+                cj["model_type"] = "gemma3_text"
+                cj.setdefault("architectures", ["Gemma3ForCausalLM"])
+                # fields the encoder configurator / rotary init require:
+                rs = cj.get("rope_scaling")
+                if not isinstance(rs, dict):
+                    rs = {"rope_type": "linear", "factor": 8.0}
+                if "rope_type" not in rs:
+                    rs["rope_type"] = rs.get("type", "linear")
+                cj["rope_scaling"] = rs
+                cj.setdefault("rope_local_base_freq", 10000.0)
+                cj.setdefault("rope_theta", 1000000.0)
+                return cj
 
             for t_file in sidecar_files:
                 dst = os.path.join(temp_folder, t_file)
@@ -661,12 +674,20 @@ class RebelsJE_TextEncoder:
                 for srcdir in sidecar_sources:
                     src = os.path.join(srcdir, t_file)
                     if os.path.exists(src):
-                        if t_file == "config.json" and not _config_ok(src):
-                            print(f"[Rebels JE] ignoring incompatible config.json at "
-                                  f"{src} (looks like the multimodal google config; "
-                                  f"using the pack's bundled text-only config instead).",
-                                  flush=True)
-                            continue
+                        if t_file == "config.json":
+                            cj = _normalize_gemma_config(src)
+                            if cj is None:
+                                print(f"[Rebels JE] skipping {src}: not a Gemma-3 "
+                                      f"config.", flush=True)
+                                continue
+                            import json as _json
+                            with open(dst, "w", encoding="utf-8") as fh:
+                                _json.dump(cj, fh, indent=2)
+                            if "text_config" not in cj:
+                                pass  # already text-only
+                            print(f"[Rebels JE] config.json normalized from {src} "
+                                  f"(text-only layout, rotary fields ensured).", flush=True)
+                            break
                         try: os.link(src, dst)
                         except OSError:
                             import shutil
@@ -771,4 +792,4 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RebelsJE_TextEncoder": "Rebels JE • Text Encoder (Gemma fp8 + Connector)",
     "RebelsJE_VAELoader": "Rebels JE • VAE Loader (video+audio)",
     "RebelsJE_Assemble": "Rebels JE • Assemble Model",
-}
+          }
